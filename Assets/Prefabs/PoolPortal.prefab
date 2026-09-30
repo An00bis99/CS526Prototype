@@ -105,4 +105,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PortalTeleport
   playerBall: {fileID: 0}
   TwinPortal: {fileID: 0}
-  portalAngle: 0

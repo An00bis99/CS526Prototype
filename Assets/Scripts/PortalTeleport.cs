@@ -6,15 +6,16 @@ public class PortalTeleport : MonoBehaviour
 {
     public GameObject playerBall;
     private PlayerMovement playerScript;
-    [SerializeField]
-    private GameObject TwinPortal;
-    [SerializeField]
-    private int portalAngle;
+
+    private float portalAngle;
+    private bool exitingPortal;
     private Collider2D myCollider;
 
+    [SerializeField]
+    private GameObject TwinPortal;
     private PortalTeleport twinScript;
-    private int twinAngle;
-    private bool exitingPortal;
+    private float twinAngle;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
@@ -25,6 +26,7 @@ public class PortalTeleport : MonoBehaviour
             Debug.Log("Portal is missing a twin!");
         }
         myCollider = GetComponent<Collider2D>();
+        portalAngle = transform.rotation.eulerAngles.z;
 
     }
     private void Start()
@@ -43,31 +45,68 @@ public class PortalTeleport : MonoBehaviour
     public void ExitPortal()
     {
         // Changes balls position to portal and adjusts angle based on portalAngle
-        Vector3 portalLoc = transform.position;
+        Vector3 portalLoc = transform.position; // going to be exit offset
         Quaternion originalAngle = playerBall.transform.rotation;
-        Quaternion newAngle; // Z Rotation is all that is used because 2D topdown
-        Vector3 eulerOriginal = originalAngle.eulerAngles;
-        switch (portalAngle)
-        {
-            case 0:
-                // Straight Up
-                portalLoc.y += 5;
+        Vector3 ballRotateToSet = playerBall.transform.rotation.eulerAngles;
 
-                break;
-            case 90:
-                portalLoc.x += 5;
-                break;
-            case 180:
-                portalLoc.y -= 5;
-                break;
-            case 270:
-                portalLoc.x -= 5;
-                break;
+        // Portal Rotation Calc
+        if (portalAngle + twinAngle != 360.0f)
+        {
+            // If angle is opposite, then all this is skipped because angle remains unchanged
+            if (portalAngle == twinAngle)
+            {
+                // Portals are facing the same direction
+                ballRotateToSet.z = 180.0f - ballRotateToSet.z;
+            }
+            else if (portalAngle == twinAngle + 90.0f)
+            {
+                // Exit is rotated clockwise
+                if (portalAngle >= 180.0f)
+                {
+                    ballRotateToSet.z = ballRotateToSet.z - 180.0f;
+                }
+                // otherwise, keep current angle
+            }
+            else if (portalAngle == twinAngle - 90.0f)
+            {
+                // Exit rotate counterclockwise
+                if (portalAngle >= 180.0f)
+                {
+                    ballRotateToSet.z = 180.0f - ballRotateToSet.z;
+                }
+                else
+                {
+                    ballRotateToSet.z = ballRotateToSet.z - 180.0f;
+                }
+            }
         }
 
+        // Offset calculations
+        // Local y direction accurately shows where portal is facing so use that as it's "normal"
+        if (portalAngle == 0.0f)
+        {
+            // Up Exit
+            portalLoc += new Vector3(0.0f, 5.0f, 0.0f);
+        }
+        else if (portalAngle == 90.0f)
+        {
+            // Right Exit
+            portalLoc += new Vector3(5.0f, 0.0f, 0.0f);
+        }
+        else if (portalAngle == 180.0f)
+        {
+            // Down Exit
+            portalLoc += new Vector3(0.0f, -5.0f, 0.0f);
+        }
+        else
+        {
+            // Left Exit
+            portalLoc += new Vector3(-5.0f, 0.0f, 0.0f);
+        }
         playerBall.transform.position = portalLoc;
-        // Transfer ball angle
 
+        // Transfer ball angle
+        playerBall.transform.rotation = Quaternion.Euler(ballRotateToSet);
 
         exitingPortal = !exitingPortal;
     }
