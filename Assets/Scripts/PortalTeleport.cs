@@ -51,6 +51,11 @@ public class PortalTeleport : MonoBehaviour
         Quaternion originalAngle = playerBall.transform.rotation;
         Vector3 ballRotateToSet = playerBall.transform.rotation.eulerAngles;
 
+        if (ballRotateToSet.z < 0.0f)
+        {
+            ballRotateToSet.z += 360.0f;
+        }
+
         // Portal Rotation Calc
         if (portalAngle + twinAngle != 360.0f)
         {
@@ -63,21 +68,43 @@ public class PortalTeleport : MonoBehaviour
             else if (twinAngle == portalAngle + 90.0f)
             {
                 // Exit rotate counterclockwise
-                if (ballRotateToSet.z >= 180.0f)
+                float offsetCalc = 270.0f + twinAngle;
+
+                if (offsetCalc >= 360.0f)
                 {
-                    ballRotateToSet.z = 180.0f - ballRotateToSet.z;
+                    offsetCalc -= 360.0f;
                 }
-                else
+
+                if (ballRotateToSet.z > offsetCalc)
                 {
                     ballRotateToSet.z = ballRotateToSet.z - 180.0f;
                 }
+                else
+                {
+                    ballRotateToSet.z = ballRotateToSet.z - 90.0f;
+                }
+                // Same angle so don't change in greater or equal to
             }
             else if (twinAngle == portalAngle - 90.0f)
             {
                 // Exit is rotated clockwise
-                if (ballRotateToSet.z <= 180.0f)
+                float offsetCalc = 270.0f + twinAngle;
+
+                if (offsetCalc >= 360.0f)
                 {
-                    ballRotateToSet.z = 180.0f - ballRotateToSet.z;
+                    offsetCalc -= 360.0f;
+                }
+
+                // Pos half is reflected, so original - 180
+                // Cutoff for "top half" angle is messed up because portals are oriented
+                // differently
+                if (ballRotateToSet.z > offsetCalc)
+                {
+                    ballRotateToSet.z = ballRotateToSet.z - 180.0f;
+                }
+                else
+                {
+                    ballRotateToSet.z = ballRotateToSet.z - 90.0f;
                 }
                 // otherwise, keep current angle
             }
