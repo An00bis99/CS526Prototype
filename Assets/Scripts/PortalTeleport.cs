@@ -8,7 +8,7 @@ public class PortalTeleport : MonoBehaviour
     private PlayerMovement playerScript;
 
     private float portalAngle;
-    private bool exitingPortal;
+    private bool touchingPortal;
     private Collider2D myCollider;
 
     [SerializeField]
@@ -21,6 +21,7 @@ public class PortalTeleport : MonoBehaviour
 
     private void Awake()
     {
+        touchingPortal = false;
         if (TwinPortal == null)
         {
             Debug.Log("Portal is missing a twin!");
@@ -44,6 +45,7 @@ public class PortalTeleport : MonoBehaviour
 
     public void ExitPortal()
     {
+        touchingPortal = true;
         // Changes balls position to portal and adjusts angle based on portalAngle
         Vector3 portalLoc = transform.position; // going to be exit offset
         Quaternion originalAngle = playerBall.transform.rotation;
@@ -58,19 +60,10 @@ public class PortalTeleport : MonoBehaviour
                 // Portals are facing the same direction
                 ballRotateToSet.z = 180.0f - ballRotateToSet.z;
             }
-            else if (portalAngle == twinAngle + 90.0f)
-            {
-                // Exit is rotated clockwise
-                if (portalAngle >= 180.0f)
-                {
-                    ballRotateToSet.z = ballRotateToSet.z - 180.0f;
-                }
-                // otherwise, keep current angle
-            }
-            else if (portalAngle == twinAngle - 90.0f)
+            else if (twinAngle == portalAngle + 90.0f)
             {
                 // Exit rotate counterclockwise
-                if (portalAngle >= 180.0f)
+                if (ballRotateToSet.z >= 180.0f)
                 {
                     ballRotateToSet.z = 180.0f - ballRotateToSet.z;
                 }
@@ -79,6 +72,15 @@ public class PortalTeleport : MonoBehaviour
                     ballRotateToSet.z = ballRotateToSet.z - 180.0f;
                 }
             }
+            else if (twinAngle == portalAngle - 90.0f)
+            {
+                // Exit is rotated clockwise
+                if (ballRotateToSet.z <= 180.0f)
+                {
+                    ballRotateToSet.z = 180.0f - ballRotateToSet.z;
+                }
+                // otherwise, keep current angle
+            }
         }
 
         // Offset calculations
@@ -86,36 +88,48 @@ public class PortalTeleport : MonoBehaviour
         if (portalAngle == 0.0f)
         {
             // Up Exit
-            portalLoc += new Vector3(0.0f, 5.0f, 0.0f);
+            portalLoc += new Vector3(0.0f, 0.5f, 0.0f);
         }
         else if (portalAngle == 90.0f)
         {
-            // Right Exit
-            portalLoc += new Vector3(5.0f, 0.0f, 0.0f);
+            // Left Exit
+            portalLoc += new Vector3(-0.5f, 0.0f, 0.0f);
         }
         else if (portalAngle == 180.0f)
         {
             // Down Exit
-            portalLoc += new Vector3(0.0f, -5.0f, 0.0f);
+            portalLoc += new Vector3(0.0f, -0.5f, 0.0f);
         }
         else
         {
-            // Left Exit
-            portalLoc += new Vector3(-5.0f, 0.0f, 0.0f);
+            // Right Exit
+            portalLoc += new Vector3(0.5f, 0.0f, 0.0f);
         }
+
+        // TODO Call function to teleport ball, apply rotation, and maintain speed
+        // For now, it will be done here but should be relegated to playerMovement
         playerBall.transform.position = portalLoc;
 
         // Transfer ball angle
         playerBall.transform.rotation = Quaternion.Euler(ballRotateToSet);
 
-        exitingPortal = !exitingPortal;
+        playerBall.GetComponent<Rigidbody2D>().linearVelocity = playerBall.GetComponent<Rigidbody2D>().linearVelocity.magnitude * playerBall.transform.right;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        if (collision.collider.tag == "Ball" && !exitingPortal)
+        if (other.tag == "Ball" && !touchingPortal)
         {
+            touchingPortal = true;
             twinScript.ExitPortal();
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.tag == "Ball")
+        {
+            touchingPortal = false;
         }
     }
 
