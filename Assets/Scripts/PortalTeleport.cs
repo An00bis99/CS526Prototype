@@ -57,7 +57,7 @@ public class PortalTeleport : MonoBehaviour
         }
 
         // Portal Rotation Calc
-        if (portalAngle + twinAngle != 360.0f)
+        if (portalAngle + twinAngle != 360.0f && portalAngle != twinAngle)
         {
             // If angle is opposite, then all this is skipped because angle remains unchanged
             if (portalAngle == twinAngle)
@@ -143,6 +143,14 @@ public class PortalTeleport : MonoBehaviour
                     ballRotateToSet.z = Mathf.Abs((ballRotateToSet.z - 360.0f) + 90.0f);
                 }
                 //ballRotateToSet.z = (offsetCalc - ballRotateToSet.z) + 90.0f;
+            }
+        }
+        else if (twinAngle == portalAngle)
+        {
+            ballRotateToSet.z = (2.0f * twinAngle) - ballRotateToSet.z;
+            if (ballRotateToSet.z < 0.0f)
+            {
+                ballRotateToSet.z += 360.0f;
             }
         }
 
