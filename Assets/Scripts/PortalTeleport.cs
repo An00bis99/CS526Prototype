@@ -68,6 +68,7 @@ public class PortalTeleport : MonoBehaviour
             else if (twinAngle == portalAngle + 90.0f)
             {
                 // Exit rotate counterclockwise
+                /*
                 float offsetCalc = 270.0f + twinAngle;
 
                 if (offsetCalc >= 360.0f)
@@ -83,21 +84,40 @@ public class PortalTeleport : MonoBehaviour
                 {
                     ballRotateToSet.z = ballRotateToSet.z - 90.0f;
                 }
+                */
+                if (twinAngle == 90.0f || twinAngle == 270.0f)
+                {
+                    // 360 - angle works
+                    ballRotateToSet.z = (360.0f - ballRotateToSet.z) + 90.0f;
+                    if (ballRotateToSet.z >= 360.0f)
+                    {
+                        ballRotateToSet.z -= 360.0f;
+                    }
+                }
+                else
+                {
+                    // angle - 360 needed
+                    ballRotateToSet.z = Mathf.Abs((ballRotateToSet.z - 360.0f) + 90.0f);
+                }
+
                 // Same angle so don't change in greater or equal to
             }
             else if (twinAngle == portalAngle - 90.0f)
             {
                 // Exit is rotated clockwise
+                /*
                 float offsetCalc = 270.0f + twinAngle;
 
                 if (offsetCalc >= 360.0f)
                 {
                     offsetCalc -= 360.0f;
                 }
+                */
 
                 // Pos half is reflected, so original - 180
                 // Cutoff for "top half" angle is messed up because portals are oriented
                 // differently
+                /*
                 if (ballRotateToSet.z > offsetCalc)
                 {
                     ballRotateToSet.z = ballRotateToSet.z - 180.0f;
@@ -106,7 +126,23 @@ public class PortalTeleport : MonoBehaviour
                 {
                     ballRotateToSet.z = ballRotateToSet.z - 90.0f;
                 }
-                // otherwise, keep current angle
+                */
+
+                if (twinAngle == 0.0f || twinAngle == 180.0f)
+                {
+                    // 360 - angle works
+                    ballRotateToSet.z = (360.0f - ballRotateToSet.z) + 90.0f;
+                    if (ballRotateToSet.z >= 360.0f)
+                    {
+                        ballRotateToSet.z -= 360.0f;
+                    }
+                }
+                else
+                {
+                    // angle - 360 needed
+                    ballRotateToSet.z = Mathf.Abs((ballRotateToSet.z - 360.0f) + 90.0f);
+                }
+                //ballRotateToSet.z = (offsetCalc - ballRotateToSet.z) + 90.0f;
             }
         }
 
