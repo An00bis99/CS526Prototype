@@ -5,7 +5,7 @@ public class PlayerMovement : MonoBehaviour
 {
 
     private ControlsClass playerControls;
-    [Header("Launch Settings")]
+    [Header("Shot Parameters (tweak speeds here)")]
 
     [SerializeField] private float minimumLaunchSpeed = 5f;
     [SerializeField] private float maximumLaunchSpeed = 20f;
@@ -35,14 +35,14 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        ReadDirectionInput();
-        ReadLaunchInput();
+        ReadRotationInput();
+        ReadShootInput();
         if (ballPhysics.linearVelocity == Vector2.zero)
         {
             isRolling = false;
         }
     }
-    private void ReadDirectionInput()
+    private void ReadRotationInput()
     {
 
 
@@ -59,7 +59,7 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
-    private void ReadLaunchInput()
+    private void ReadShootInput()
     {
 
         if (!isRolling)
