@@ -16,14 +16,16 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 lastVel;
 
     private Rigidbody2D ballPhysics;
-    private bool isRolling;
+    public bool isRolling;
     private Vector3 originalPosition;
     private Quaternion originalDirection;
+    private LineRenderer myLine;
 
     private void Awake()
     {
         playerControls = new ControlsClass();
         ballPhysics = GetComponent<Rigidbody2D>();
+        myLine = GetComponent<LineRenderer>();
         potentialSpeed = 0.0f;
         originalPosition = transform.position;
         originalDirection = transform.rotation;
@@ -42,11 +44,19 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         lastVel = ballPhysics.linearVelocity;
-        if (lastVel.magnitude <= 1.25f && isRolling)
+        if (lastVel.magnitude <= 1.25f && lastVel.magnitude > 0.0f)
         {
-            ballPhysics.linearVelocity = Vector2.zero;
-            transform.position = originalPosition;
-            transform.rotation = originalDirection;
+            if (!isRolling && lastVel.magnitude != 0.0f)
+            {
+                ballPhysics.linearVelocity = Vector2.zero;
+                transform.position = originalPosition;
+                transform.rotation = originalDirection;
+                myLine.enabled = true;
+            }
+            else
+            {
+                isRolling = false;
+            }
         }
     }
 
@@ -54,25 +64,23 @@ public class PlayerMovement : MonoBehaviour
     {
         ReadRotationInput();
         ReadShootInput();
-        if (ballPhysics.linearVelocity == Vector2.zero)
-        {
-            isRolling = false;
-        }
     }
 
     private void ReadRotationInput()
     {
 
-
-        if (playerControls.Player.RotateLeft.IsPressed())
+        if (!isRolling)
         {
-            // Apply rotation
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 0.0f, 50.0f * Time.deltaTime));
+            if (playerControls.Player.RotateLeft.IsPressed())
+            {
+                // Apply rotation
+                transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles + new Vector3(0.0f, 0.0f, 50.0f * Time.deltaTime));
 
-        }
-        else if (playerControls.Player.RotateRight.IsPressed())
-        {
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles - new Vector3(0.0f, 0.0f, 50.0f * Time.deltaTime));
+            }
+            else if (playerControls.Player.RotateRight.IsPressed())
+            {
+                transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles - new Vector3(0.0f, 0.0f, 50.0f * Time.deltaTime));
+            }
         }
 
     }
@@ -99,6 +107,7 @@ public class PlayerMovement : MonoBehaviour
                 {
                     // Launch ball
                     isRolling = true;
+                    myLine.enabled = false;
                     ballPhysics.AddForce(transform.right * potentialSpeed * SPEED_MULT);
                 }
                 potentialSpeed = 0.0f;
@@ -133,7 +142,6 @@ public class PlayerMovement : MonoBehaviour
 
             ballPhysics.linearVelocity = bounceVelocity;
 
-            // Optional: rotate the object to face its new direction.
             if (bounceVelocity.sqrMagnitude > 0.001f)
             {
                 float angle = Mathf.Atan2(
