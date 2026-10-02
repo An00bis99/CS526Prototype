@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -8,19 +9,24 @@ public class PlayerMovement : MonoBehaviour
     [Header("Shot Parameters (tweak speeds here)")]
 
     [SerializeField] private float minimumLaunchSpeed = 5f;
-    [SerializeField] private float maximumLaunchSpeed = 20f;
+    [SerializeField] private float maximumLaunchSpeed = 25f;
     [SerializeField] private float SPEED_MULT = 15.0f;
 
     private float potentialSpeed;
+    private Vector2 lastVel;
 
     private Rigidbody2D ballPhysics;
     private bool isRolling;
+    private Vector3 originalPosition;
+    private Quaternion originalDirection;
 
     private void Awake()
     {
         playerControls = new ControlsClass();
         ballPhysics = GetComponent<Rigidbody2D>();
         potentialSpeed = 0.0f;
+        originalPosition = transform.position;
+        originalDirection = transform.rotation;
     }
 
     private void OnEnable()
@@ -33,6 +39,17 @@ public class PlayerMovement : MonoBehaviour
         playerControls.Disable();
     }
 
+    private void FixedUpdate()
+    {
+        lastVel = ballPhysics.linearVelocity;
+        if (lastVel.magnitude <= 1.25f && isRolling)
+        {
+            ballPhysics.linearVelocity = Vector2.zero;
+            transform.position = originalPosition;
+            transform.rotation = originalDirection;
+        }
+    }
+
     void Update()
     {
         ReadRotationInput();
@@ -42,6 +59,7 @@ public class PlayerMovement : MonoBehaviour
             isRolling = false;
         }
     }
+
     private void ReadRotationInput()
     {
 
@@ -68,7 +86,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (potentialSpeed < maximumLaunchSpeed)
                 {
-                    potentialSpeed += 5.0f * Time.deltaTime;
+                    potentialSpeed += 25.0f * Time.deltaTime;
                 }
                 else
                 {
@@ -86,6 +104,10 @@ public class PlayerMovement : MonoBehaviour
                 potentialSpeed = 0.0f;
             }
         }
+        else
+        {
+
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -93,6 +115,34 @@ public class PlayerMovement : MonoBehaviour
         if (collision.collider.tag == "Goal")
         {
             // Load next scene
+        }
+        else if (collision.collider.tag == "Wall")
+        {
+            /*
+            // Bounce according to equation
+            float speed = lastVel.magnitude;
+            float wallAngle = collision.transform.rotation.z;
+            float angleToSet = (2.0f * wallAngle) - transform.rotation.z;
+            Vector3 vecToSet = transform.rotation.eulerAngles;
+            vecToSet.z = angleToSet;
+            transform.rotation = Quaternion.Euler(vecToSet);
+            ballPhysics.linearVelocity = transform.right * speed;
+            */
+            Vector2 wallNormal = collision.GetContact(0).normal;
+            Vector2 bounceVelocity = Vector2.Reflect(lastVel, wallNormal);
+
+            ballPhysics.linearVelocity = bounceVelocity;
+
+            // Optional: rotate the object to face its new direction.
+            if (bounceVelocity.sqrMagnitude > 0.001f)
+            {
+                float angle = Mathf.Atan2(
+                    bounceVelocity.y,
+                    bounceVelocity.x
+                ) * Mathf.Rad2Deg;
+
+                ballPhysics.SetRotation(angle);
+            }
         }
     }
 }
