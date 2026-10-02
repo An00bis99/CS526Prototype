@@ -635,7 +635,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3802baf08512a4ce38de6e18025ba279, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneChanger
-  nextSceneName: Level1
+  nextSceneName: MainScene
 --- !u!1001 &2124986469
 PrefabInstance:
   m_ObjectHideFlags: 0
